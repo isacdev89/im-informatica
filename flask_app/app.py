@@ -138,6 +138,18 @@ def index():
     )
 
 
+@app.route("/blog/<int:post_id>")
+def blog_detalhe(post_id):
+    post = BlogPost.query.get_or_404(post_id)
+    outros = (
+        BlogPost.query.filter(BlogPost.id != post.id)
+        .order_by(BlogPost.created_at.desc())
+        .limit(3)
+        .all()
+    )
+    return render_template("blog_post.html", post=post, outros=outros)
+
+
 @app.route("/api/contato", methods=["POST"])
 @csrf.exempt  # chamado via fetch() do front-end; validado por dados obrigatórios abaixo
 def api_contato():
@@ -523,12 +535,18 @@ def seed_data():
             "linear-gradient(135deg,#16274A,#2F6BFF)", "linear-gradient(135deg,#05070D,#0F1D3A)",
         ]
         portfolio = [
-            ("computadores", "Computadores", "Montagem Gamer Ryzen 5", "Montagem completa com refrigeração otimizada."),
-            ("notebooks", "Notebooks", "Recuperação de Notebook Dell", "Troca de tela, upgrade de SSD e limpeza interna."),
-            ("sistemas", "Sistemas", "Sistema de Gestão de Estoque", "Painel web para controle de produtos e financeiro."),
-            ("sites", "Sites", "Site Institucional", "Site responsivo com SEO completo."),
-            ("redes", "Redes", "Rede Corporativa Wi-Fi", "Cobertura total com múltiplos pontos de acesso."),
-            ("sistemas", "Sistemas", "Atendimento Automatizado", "Respostas automáticas via WhatsApp."),
+            ("sistemas", "Sistemas", "Sistema de Inventário de TI (INVENTARIO-T.I.)",
+             "Sistema completo em Django para controle de equipamentos de informática de unidades de saúde, com cadastro, histórico e relatórios."),
+            ("sistemas", "Sistemas", "Sistema de Gestão para Loja Virtual",
+             "Sistema local com PDV, controle de estoque, cadastro de clientes, controle de fiado e relatórios de vendas."),
+            ("sistemas", "Sistemas", "Assistente Virtual Inteligente",
+             "Assistente pessoal em Python com automação de tarefas, streaming de tela e respostas por voz em português."),
+            ("computadores", "Computadores", "Manutenção e Suporte de Equipamentos de TI",
+             "Manutenção preventiva e corretiva de computadores em unidades de saúde municipais, com diagnóstico de hardware e software."),
+            ("redes", "Redes", "Suporte de Rede em Unidades de Saúde",
+             "Configuração e suporte de rede para funcionamento estável de sistemas de saúde nas unidades municipais."),
+            ("sistemas", "Treinamento", "Tutoriais e Treinamento para o Sistema e-SUS PEC",
+             "Elaboração de tutoriais em PDF e vídeo para Agentes Comunitários de Saúde sobre o uso do e-SUS PEC."),
         ]
         for i, (cat, label, title, desc) in enumerate(portfolio):
             db.session.add(PortfolioItem(category=cat, label=label, title=title, description=desc,
@@ -545,12 +563,38 @@ def seed_data():
 
     if BlogPost.query.count() == 0:
         posts = [
-            ("Segurança", "5 sinais de que seu PC está infectado", "Aprenda a identificar sinais de vírus a tempo."),
-            ("Dicas", "Como prolongar a vida útil do seu notebook", "Cuidados simples que fazem grande diferença."),
-            ("Inteligência Artificial", "IA no suporte técnico: o que muda para você", "Como a automação torna o suporte mais rápido."),
+            ("Dicas", "Como organizar o inventário de equipamentos da sua empresa",
+             "Por que um controle de patrimônio de TI evita prejuízo e retrabalho.",
+             "Um inventário de TI bem feito é a diferença entre saber exatamente onde está cada "
+             "computador, monitor e periférico — e perder tempo procurando ou comprando algo que já "
+             "existe em outro setor. Manter um cadastro atualizado, com número de série, localização "
+             "e responsável, facilita manutenções, troca de equipamentos com defeito e planejamento "
+             "de compras futuras. Pequenas empresas e órgãos públicos que adotam esse controle "
+             "reduzem custos e evitam extravio de material."),
+            ("Segurança", "Backup: o cuidado que evita a perda total dos seus dados",
+             "Boas práticas simples de backup para pequenas empresas e órgãos públicos.",
+             "Perder arquivos importantes por falha de disco, vírus ou erro humano é mais comum do "
+             "que parece — e na maioria das vezes é evitável. A regra mais simples de seguir é a "
+             "\"3-2-1\": três cópias dos dados, em dois tipos de mídia diferentes, sendo uma delas "
+             "fora do local principal (nuvem ou HD externo). Automatizar esse processo, mesmo que de "
+             "forma básica, evita depender da memória de alguém para lembrar de fazer backup "
+             "manualmente."),
+            ("Sistemas", "Sistemas sob medida: quando vale a pena automatizar processos",
+             "Como um sistema simples pode economizar horas de trabalho manual.",
+             "Muita empresa ainda controla estoque, vendas ou atendimentos em planilhas ou até no "
+             "papel. Um sistema sob medida, mesmo simples, elimina retrabalho, reduz erros de "
+             "digitação e centraliza as informações em um só lugar. O investimento inicial costuma "
+             "se pagar rápido quando se leva em conta o tempo economizado no dia a dia da equipe."),
+            ("Dicas", "5 sinais de que é hora de atualizar seu computador ou notebook",
+             "Sinais de lentidão que indicam necessidade de upgrade ou manutenção.",
+             "Ventilador funcionando o tempo todo em alta rotação, programas travando ao abrir, "
+             "tempo de inicialização cada vez mais longo, pouco espaço livre no disco e "
+             "travamentos frequentes são sinais de que o equipamento precisa de atenção. Em "
+             "muitos casos, uma limpeza física, upgrade de memória ou troca do disco por um SSD "
+             "resolve o problema sem precisar comprar um equipamento novo."),
         ]
-        for cat, title, desc in posts:
-            db.session.add(BlogPost(category=cat, title=title, description=desc, content=desc))
+        for cat, title, desc, content in posts:
+            db.session.add(BlogPost(category=cat, title=title, description=desc, content=content))
 
     if DownloadItem.query.count() == 0:
         downloads = [

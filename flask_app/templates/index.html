@@ -175,7 +175,7 @@
           <span class="blog-meta">{{ post.created_at.strftime('%d/%m/%Y') }}</span>
           <h3>{{ post.title }}</h3>
           <p>{{ post.description }}</p>
-          <a href="#" class="blog-link">Ler artigo <i class="fa-solid fa-arrow-right"></i></a>
+          <a href="{{ url_for('blog_detalhe', post_id=post.id) }}" class="blog-link">Ler artigo <i class="fa-solid fa-arrow-right"></i></a>
         </div>
       </article>
       {% else %}

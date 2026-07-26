@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} — {{ settings.empresa_nome }}{% endblock %}
+
+{% block content %}
+<section style="padding-top:140px; background:var(--bg-elevated);">
+  <div class="container section-inner" style="max-width:760px;">
+    <a href="{{ url_for('index') }}#blog" class="blog-link" style="margin-bottom:24px; display:inline-flex;">
+      <i class="fa-solid fa-arrow-left"></i> Voltar para o Blog
+    </a>
+
+    <span class="eyebrow">{{ post.category|upper }}</span>
+    <h1 style="margin-top:8px;">{{ post.title }}</h1>
+    <span class="blog-meta" style="display:block; margin-bottom:24px;">
+      {{ post.created_at.strftime('%d/%m/%Y') }}
+    </span>
+
+    {% if post.cover_image %}
+    <div style="border-radius:var(--radius-sm); overflow:hidden; margin-bottom:32px;">
+      <img src="{{ url_for('static', filename='uploads/blog/' + post.cover_image) }}" alt="{{ post.title }}" style="width:100%; height:auto; display:block;">
+    </div>
+    {% endif %}
+
+    {% if post.description %}
+    <p style="font-size:1.15rem; color:var(--text-muted); margin-bottom:24px;">{{ post.description }}</p>
+    {% endif %}
+
+    <div class="glass" style="padding:32px; border-radius:var(--radius-sm); line-height:1.8; white-space:pre-line;">
+      {{ post.content }}
+    </div>
+
+    {% if outros %}
+    <div style="margin-top:56px;">
+      <h3 style="margin-bottom:20px;">Outros artigos</h3>
+      <div class="blog-grid">
+        {% for p in outros %}
+        <article class="blog-card glass reveal">
+          <div class="blog-thumb" style="background:linear-gradient(135deg,#0A1128,#2F6BFF);">
+            {% if p.cover_image %}<img src="{{ url_for('static', filename='uploads/blog/' + p.cover_image) }}" alt="{{ p.title }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;">{% endif %}
+            <span style="position:relative; z-index:1;">{{ p.category|upper }}</span>
+          </div>
+          <div class="blog-body">
+            <span class="blog-meta">{{ p.created_at.strftime('%d/%m/%Y') }}</span>
+            <h3>{{ p.title }}</h3>
+            <p>{{ p.description }}</p>
+            <a href="{{ url_for('blog_detalhe', post_id=p.id) }}" class="blog-link">Ler artigo <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
