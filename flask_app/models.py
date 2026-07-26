@@ -147,6 +147,32 @@ class Quote(db.Model):
     valid_until = db.Column(db.DateTime)
 
 
+class Ebook(db.Model):
+    """Livro ou apostila digital à venda (catálogo — venda via WhatsApp,
+    sem checkout automático)."""
+    __tablename__ = "ebooks"
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(40), default="Apostila")   # Livro | Apostila
+    title = db.Column(db.String(180), nullable=False)
+    description = db.Column(db.String(280))
+    price = db.Column(db.String(30), default="A combinar")
+    cover_image = db.Column(db.String(255))   # nome do arquivo em static/uploads/ebooks
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class SoftwareCatalogItem(db.Model):
+    """Item do catálogo de ISOs e programas — aponta para a página oficial
+    do fabricante, o site não hospeda os instaladores."""
+    __tablename__ = "software_catalog_items"
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(40), default="Programa")   # Sistema Operacional | Programa | Driver
+    icon = db.Column(db.String(50), default="fa-download")
+    name = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.String(255))
+    official_url = db.Column(db.String(400), nullable=False)
+    order = db.Column(db.Integer, default=0)
+
+
 class Setting(db.Model):
     """Configurações gerais do site (chave/valor)."""
     __tablename__ = "settings"

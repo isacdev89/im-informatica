@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %}
+{% block title %}ISOs e Programas{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Catálogo de ISOs e Programas</h3></div>
+<p style="color:var(--text-muted); margin-top:-10px; margin-bottom:20px;">
+  Este catálogo aponta para as páginas oficiais dos fabricantes (Microsoft, etc.).
+  O site não hospeda ISOs nem instaladores — isso evita problemas de direitos autorais
+  e o limite de armazenamento do plano gratuito.
+</p>
+<form method="POST" class="glass" style="padding:22px; border-radius:var(--radius-md); margin-bottom:26px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-md-2">
+      <div class="form-field"><label>Categoria</label>
+        <select name="category" class="form-select" style="padding:14px 16px; border-radius:var(--radius-sm); background:var(--surface); border:1px solid var(--border); color:var(--text); width:100%;">
+          <option value="Sistema Operacional">Sistema Operacional</option>
+          <option value="Programa" selected>Programa</option>
+          <option value="Driver">Driver</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-2"><div class="form-field"><label>Ícone (Font Awesome)</label><input type="text" name="icon" placeholder="fa-download"></div></div>
+    <div class="col-md-3"><div class="form-field"><label>Nome</label><input type="text" name="name" required placeholder="Windows 11"></div></div>
+    <div class="col-md-2"><div class="form-field"><label>Descrição</label><input type="text" name="description" placeholder="ISO oficial 64-bit"></div></div>
+    <div class="col-md-3"><div class="form-field"><label>Link oficial</label><input type="text" name="official_url" required placeholder="https://www.microsoft.com/..."></div></div>
+  </div>
+  <button class="btn btn-primary btn-sm" type="submit"><i class="fa-solid fa-plus"></i> Adicionar item</button>
+</form>
+<div class="table-wrap glass"><table>
+  <thead><tr><th>Nome</th><th>Categoria</th><th>Link oficial</th><th>Ações</th></tr></thead>
+  <tbody>
+    {% for s in items %}
+    <tr>
+      <td><i class="fa-solid {{ s.icon }}"></i> {{ s.name }}</td>
+      <td>{{ s.category }}</td>
+      <td><a href="{{ s.official_url }}" target="_blank" rel="noopener">{{ s.official_url|truncate(40) }}</a></td>
+      <td class="row-actions">
+        <form method="POST" action="{{ url_for('admin_softwares_excluir', item_id=s.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este item?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"><i class="fa-solid fa-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" style="color:var(--text-muted);">Nenhum item cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

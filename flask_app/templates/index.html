@@ -209,6 +209,51 @@
   </div>
 </section>
 
+<!-- ==================== LOJA (livros/apostilas + catálogo de ISOs/programas) ==================== -->
+<section id="loja" style="background:var(--bg-elevated);">
+  <div class="container section-inner">
+    <div class="section-head reveal"><span class="eyebrow">LOJA</span><h2>Livros, Apostilas, ISOs e Programas</h2><p>Materiais digitais à venda e links oficiais para os sistemas e programas mais usados.</p></div>
+
+    {% if ebooks %}
+    <h3 style="margin-bottom:18px;">Livros e Apostilas</h3>
+    <div class="ebook-grid" style="margin-bottom:48px;">
+      {% for e in ebooks %}
+      <article class="ebook-card glass reveal">
+        <div class="ebook-cover">
+          {% if e.cover_image %}<img src="{{ url_for('static', filename='uploads/ebooks/' + e.cover_image) }}" alt="{{ e.title }}">
+          {% else %}<i class="fa-solid fa-book"></i>{% endif %}
+        </div>
+        <div class="ebook-body">
+          <span class="eyebrow">{{ e.category|upper }}</span>
+          <b>{{ e.title }}</b>
+          {% if e.description %}<span style="font-size:.85rem; color:var(--text-muted);">{{ e.description }}</span>{% endif %}
+          <span class="ebook-price">{{ e.price }}</span>
+          <a href="https://wa.me/{{ settings.whatsapp }}?text={{ ('Olá! Tenho interesse no material: ' ~ e.title)|urlencode }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm btn-block"><i class="fa-brands fa-whatsapp"></i> Comprar</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if softwares %}
+    <h3 style="margin-bottom:18px;">ISOs e Programas (links oficiais)</h3>
+    <div class="dl-grid">
+      {% for s in softwares %}
+      <div class="dl-card glass reveal">
+        <div class="dl-icon"><i class="fa-solid {{ s.icon }}"></i></div>
+        <div class="dl-info"><b>{{ s.name }}</b><span>{{ s.description or s.category }}</span></div>
+        <a href="{{ s.official_url }}" class="dl-btn" title="Ir para o site oficial" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not ebooks and not softwares %}
+    <p style="color:var(--text-muted);">Em breve novidades por aqui.</p>
+    {% endif %}
+  </div>
+</section>
+
 <!-- ==================== CONTATO ==================== -->
 <section id="contato" style="background:var(--bg-elevated);">
   <div class="container section-inner">

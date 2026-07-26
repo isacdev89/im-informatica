@@ -26,7 +26,8 @@ from flask_wtf import CSRFProtect
 
 from models import (
     db, AdminUser, ClientUser, Service, PortfolioItem, Testimonial,
-    BlogPost, DownloadItem, ContactMessage, ServiceRecord, Quote, Setting
+    BlogPost, DownloadItem, ContactMessage, ServiceRecord, Quote, Setting,
+    Ebook, SoftwareCatalogItem
 )
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -51,7 +52,7 @@ ALLOWED_VIDEO_EXT = {"mp4", "webm", "mov"}
 ALLOWED_DOWNLOAD_EXT = {"pdf", "zip", "doc", "docx", "xls", "xlsx"}
 
 os.makedirs(os.path.join(BASE_DIR, "instance"), exist_ok=True)
-for sub in ("portfolio", "blog", "depoimentos", "downloads"):
+for sub in ("portfolio", "blog", "depoimentos", "downloads", "ebooks"):
     os.makedirs(os.path.join(UPLOAD_ROOT, sub), exist_ok=True)
 
 
@@ -133,9 +134,12 @@ def index():
     testimonials = Testimonial.query.order_by(Testimonial.order).all()
     posts = BlogPost.query.order_by(BlogPost.created_at.desc()).limit(6).all()
     downloads = DownloadItem.query.all()
+    ebooks = Ebook.query.order_by(Ebook.created_at.desc()).all()
+    softwares = SoftwareCatalogItem.query.order_by(SoftwareCatalogItem.order).all()
     return render_template(
         "index.html", services=services, portfolio=portfolio,
-        testimonials=testimonials, posts=posts, downloads=downloads
+        testimonials=testimonials, posts=posts, downloads=downloads,
+        ebooks=ebooks, softwares=softwares
     )
 
 
@@ -426,6 +430,66 @@ def admin_downloads_excluir(item_id):
     return redirect(url_for("admin_downloads"))
 
 
+# ---- Livros e Apostilas (venda via WhatsApp) --------------------------------
+@app.route("/admin/ebooks", methods=["GET", "POST"])
+@login_required
+def admin_ebooks():
+    admin_required()
+    if request.method == "POST":
+        _, cover_file = save_media(request.files.get("cover"), "ebooks", allow_video=False)
+        db.session.add(Ebook(
+            category=request.form.get("category", "Apostila").strip() or "Apostila",
+            title=request.form.get("title", "").strip(),
+            description=request.form.get("description", "").strip(),
+            price=request.form.get("price", "").strip() or "A combinar",
+            cover_image=cover_file,
+        ))
+        db.session.commit()
+        return redirect(url_for("admin_ebooks"))
+    items = Ebook.query.order_by(Ebook.created_at.desc()).all()
+    return render_template("admin/ebooks.html", items=items)
+
+
+@app.route("/admin/ebooks/<int:item_id>/excluir", methods=["POST"])
+@login_required
+def admin_ebooks_excluir(item_id):
+    admin_required()
+    obj = Ebook.query.get_or_404(item_id)
+    delete_media("ebooks", obj.cover_image)
+    db.session.delete(obj)
+    db.session.commit()
+    return redirect(url_for("admin_ebooks"))
+
+
+# ---- Catálogo de ISOs e Programas (links oficiais, sem hospedar arquivos) --
+@app.route("/admin/softwares", methods=["GET", "POST"])
+@login_required
+def admin_softwares():
+    admin_required()
+    if request.method == "POST":
+        db.session.add(SoftwareCatalogItem(
+            category=request.form.get("category", "Programa").strip() or "Programa",
+            icon=request.form.get("icon", "fa-download").strip() or "fa-download",
+            name=request.form.get("name", "").strip(),
+            description=request.form.get("description", "").strip(),
+            official_url=request.form.get("official_url", "").strip(),
+        ))
+        db.session.commit()
+        return redirect(url_for("admin_softwares"))
+    items = SoftwareCatalogItem.query.order_by(SoftwareCatalogItem.order).all()
+    return render_template("admin/softwares.html", items=items)
+
+
+@app.route("/admin/softwares/<int:item_id>/excluir", methods=["POST"])
+@login_required
+def admin_softwares_excluir(item_id):
+    admin_required()
+    obj = SoftwareCatalogItem.query.get_or_404(item_id)
+    db.session.delete(obj)
+    db.session.commit()
+    return redirect(url_for("admin_softwares"))
+
+
 # ---- Usuários administradores -------------------------------------------------
 @app.route("/admin/usuarios", methods=["GET", "POST"])
 @login_required
@@ -659,6 +723,42 @@ def seed_data():
         ]
         for icon, name, size in downloads:
             db.session.add(DownloadItem(icon=icon, name=name, size=size))
+
+    if Ebook.query.count() == 0:
+        ebooks = [
+            ("Apostila", "Apostila de Informática Básica",
+             "Do zero ao uso confiante do computador no dia a dia.", "R$ 19,90"),
+            ("Apostila", "Apostila de Excel Básico ao Avançado",
+             "Fórmulas, planilhas e organização de dados na prática.", "R$ 24,90"),
+            ("Livro", "Guia Prático de Manutenção de Computadores",
+             "Diagnóstico e solução dos problemas mais comuns de hardware e software.", "R$ 29,90"),
+        ]
+        for cat, title, desc, price in ebooks:
+            db.session.add(Ebook(category=cat, title=title, description=desc, price=price))
+
+    if SoftwareCatalogItem.query.count() == 0:
+        softwares = [
+            ("Sistema Operacional", "fa-window-restore", "Windows 11",
+             "Página oficial de download (Media Creation Tool / ISO)",
+             "https://www.microsoft.com/pt-br/software-download/windows11"),
+            ("Sistema Operacional", "fa-window-restore", "Windows 10",
+             "Página oficial de download (Media Creation Tool / ISO)",
+             "https://www.microsoft.com/pt-br/software-download/windows10"),
+            ("Programa", "fa-file-zipper", "7-Zip",
+             "Compactador de arquivos gratuito e de código aberto",
+             "https://www.7-zip.org/"),
+            ("Programa", "fa-shield-halved", "Microsoft Defender",
+             "Antivírus oficial e gratuito da Microsoft",
+             "https://www.microsoft.com/pt-br/windows/comprehensive-security"),
+            ("Programa", "fa-globe", "Google Chrome",
+             "Navegador oficial do Google",
+             "https://www.google.com/intl/pt-BR/chrome/"),
+            ("Driver", "fa-print", "Drivers HP (busca por modelo)",
+             "Página oficial de suporte e drivers da HP",
+             "https://support.hp.com/br-pt/drivers"),
+        ]
+        for i, (cat, icon, name, desc, url) in enumerate(softwares):
+            db.session.add(SoftwareCatalogItem(category=cat, icon=icon, name=name, description=desc, official_url=url, order=i))
 
     db.session.commit()
 

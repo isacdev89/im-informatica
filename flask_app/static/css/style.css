@@ -383,6 +383,15 @@ h2{font-size:clamp(1.9rem, 3.2vw, 2.6rem);}
 .dl-btn{margin-left:auto; width:38px; height:38px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); flex:none;}
 .dl-btn:hover{color:var(--neon); border-color:var(--neon);}
 
+.ebook-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:24px;}
+.ebook-card{border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--border); transition:transform .4s var(--ease); display:flex; flex-direction:column;}
+.ebook-card:hover{transform:translateY(-6px);}
+.ebook-cover{aspect-ratio:3/4; background:linear-gradient(135deg,#0A1128,#2F6BFF); display:flex; align-items:center; justify-content:center; color:#fff; font-size:2.4rem; position:relative; overflow:hidden;}
+.ebook-cover img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.ebook-body{padding:18px; display:flex; flex-direction:column; gap:6px; flex:1;}
+.ebook-body .eyebrow{font-size:.68rem;}
+.ebook-price{font-weight:700; color:var(--neon); margin-top:auto;}
+
 /* ===================== CONTATO ===================== */
 .contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:40px;}
 @media (max-width:900px){.contact-grid{grid-template-columns:1fr;}}

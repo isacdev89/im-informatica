@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% block title %}Livros e Apostilas{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Livros e Apostilas Digitais</h3></div>
+<p style="color:var(--text-muted); margin-top:-10px; margin-bottom:20px;">
+  Catálogo de venda: o cliente vê o item no site e clica em "Comprar" para falar
+  com você pelo WhatsApp. Não há checkout automático — a venda é combinada manualmente.
+</p>
+<form method="POST" enctype="multipart/form-data" class="glass" style="padding:22px; border-radius:var(--radius-md); margin-bottom:26px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-md-2">
+      <div class="form-field"><label>Categoria</label>
+        <select name="category" class="form-select" style="padding:14px 16px; border-radius:var(--radius-sm); background:var(--surface); border:1px solid var(--border); color:var(--text); width:100%;">
+          <option value="Livro">Livro</option>
+          <option value="Apostila" selected>Apostila</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-4"><div class="form-field"><label>Título</label><input type="text" name="title" required></div></div>
+    <div class="col-md-3"><div class="form-field"><label>Descrição</label><input type="text" name="description"></div></div>
+    <div class="col-md-3"><div class="form-field"><label>Preço</label><input type="text" name="price" placeholder="R$ 29,90"></div></div>
+  </div>
+  <div class="form-field">
+    <label>Capa (opcional — png, jpg, webp, gif)</label>
+    <input type="file" name="cover" accept="image/png,image/jpeg,image/webp,image/gif">
+  </div>
+  <button class="btn btn-primary btn-sm" type="submit"><i class="fa-solid fa-plus"></i> Adicionar item</button>
+</form>
+<div class="table-wrap glass"><table>
+  <thead><tr><th>Capa</th><th>Título</th><th>Categoria</th><th>Preço</th><th>Ações</th></tr></thead>
+  <tbody>
+    {% for e in items %}
+    <tr>
+      <td>
+        {% if e.cover_image %}<img src="{{ url_for('static', filename='uploads/ebooks/' + e.cover_image) }}" style="width:44px; height:60px; object-fit:cover; border-radius:6px;">
+        {% else %}<span style="color:var(--text-muted);"><i class="fa-solid fa-book"></i></span>{% endif %}
+      </td>
+      <td>{{ e.title }}</td>
+      <td>{{ e.category }}</td>
+      <td>{{ e.price }}</td>
+      <td class="row-actions">
+        <form method="POST" action="{{ url_for('admin_ebooks_excluir', item_id=e.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este item?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"><i class="fa-solid fa-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="color:var(--text-muted);">Nenhum livro/apostila cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}
