@@ -194,7 +194,15 @@
       <div class="dl-card glass reveal">
         <div class="dl-icon"><i class="fa-solid {{ d.icon }}"></i></div>
         <div class="dl-info"><b>{{ d.name }}</b><span>{{ d.size }}</span></div>
-        <a href="{{ d.url }}" class="dl-btn" title="Baixar"><i class="fa-solid fa-download"></i></a>
+        {% if d.url and d.url != '#' %}
+          {% if d.url.startswith('http://') or d.url.startswith('https://') %}
+          <a href="{{ d.url }}" class="dl-btn" title="Baixar" target="_blank" rel="noopener"><i class="fa-solid fa-download"></i></a>
+          {% else %}
+          <a href="{{ url_for('static', filename='uploads/downloads/' + d.url) }}" class="dl-btn" title="Baixar" download><i class="fa-solid fa-download"></i></a>
+          {% endif %}
+        {% else %}
+          <span class="dl-btn" title="Em breve" style="opacity:.4; cursor:not-allowed;"><i class="fa-solid fa-clock"></i></span>
+        {% endif %}
       </div>
       {% endfor %}
     </div>

@@ -1,0 +1,50 @@
+{% extends "admin/base.html" %}
+{% block title %}Downloads{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Área de Downloads</h3></div>
+<form method="POST" enctype="multipart/form-data" class="glass" style="padding:22px; border-radius:var(--radius-md); margin-bottom:26px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-md-3"><div class="form-field"><label>Ícone (Font Awesome)</label><input type="text" name="icon" placeholder="fa-download"></div></div>
+    <div class="col-md-4"><div class="form-field"><label>Nome do arquivo</label><input type="text" name="name" required placeholder="Manual: primeiros socorros de TI"></div></div>
+    <div class="col-md-2"><div class="form-field"><label>Tamanho</label><input type="text" name="size" placeholder="2 MB"></div></div>
+  </div>
+  <div class="form-field">
+    <label>Link externo (opcional — se preenchido, tem prioridade sobre o arquivo abaixo)</label>
+    <input type="text" name="url" placeholder="https://...">
+  </div>
+  <div class="form-field">
+    <label>Ou envie um arquivo (PDF, ZIP, DOC, DOCX, XLS, XLSX)</label>
+    <input type="file" name="arquivo" accept=".pdf,.zip,.doc,.docx,.xls,.xlsx">
+  </div>
+  <button class="btn btn-primary btn-sm" type="submit"><i class="fa-solid fa-plus"></i> Adicionar item</button>
+</form>
+<div class="table-wrap glass"><table>
+  <thead><tr><th>Nome</th><th>Tamanho</th><th>Origem</th><th>Ações</th></tr></thead>
+  <tbody>
+    {% for d in items %}
+    <tr>
+      <td><i class="fa-solid {{ d.icon }}"></i> {{ d.name }}</td>
+      <td>{{ d.size }}</td>
+      <td>
+        {% if not d.url or d.url == '#' %}
+          <span style="color:var(--text-muted);">Sem arquivo/link — indisponível no site</span>
+        {% elif d.url.startswith('http') %}
+          <a href="{{ d.url }}" target="_blank" rel="noopener">Link externo</a>
+        {% else %}
+          <a href="{{ url_for('static', filename='uploads/downloads/' + d.url) }}" target="_blank" rel="noopener">Arquivo enviado</a>
+        {% endif %}
+      </td>
+      <td class="row-actions">
+        <form method="POST" action="{{ url_for('admin_downloads_excluir', item_id=d.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este item?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"><i class="fa-solid fa-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" style="color:var(--text-muted);">Nenhum item de download cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

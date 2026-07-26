@@ -48,9 +48,10 @@ app.config["MAX_CONTENT_LENGTH"] = 60 * 1024 * 1024  # limite de 60 MB por uploa
 UPLOAD_ROOT = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_IMAGE_EXT = {"png", "jpg", "jpeg", "webp", "gif"}
 ALLOWED_VIDEO_EXT = {"mp4", "webm", "mov"}
+ALLOWED_DOWNLOAD_EXT = {"pdf", "zip", "doc", "docx", "xls", "xlsx"}
 
 os.makedirs(os.path.join(BASE_DIR, "instance"), exist_ok=True)
-for sub in ("portfolio", "blog", "depoimentos"):
+for sub in ("portfolio", "blog", "depoimentos", "downloads"):
     os.makedirs(os.path.join(UPLOAD_ROOT, sub), exist_ok=True)
 
 
@@ -382,6 +383,49 @@ def admin_portfolio_excluir(item_id):
     return redirect(url_for("admin_portfolio"))
 
 
+# ---- Downloads --------------------------------------------------------------
+@app.route("/admin/downloads", methods=["GET", "POST"])
+@login_required
+def admin_downloads():
+    admin_required()
+    if request.method == "POST":
+        url_field = request.form.get("url", "").strip()
+        file_field = request.files.get("arquivo")
+        stored_name = None
+        if file_field and file_field.filename:
+            ext = _ext(file_field.filename)
+            if ext in ALLOWED_DOWNLOAD_EXT:
+                stored_name = f"{uuid.uuid4().hex}.{ext}"
+                dest_dir = os.path.join(UPLOAD_ROOT, "downloads")
+                os.makedirs(dest_dir, exist_ok=True)
+                file_field.save(os.path.join(dest_dir, secure_filename(stored_name)))
+            else:
+                flash("Formato de arquivo não permitido. Use PDF, ZIP, DOC, DOCX, XLS ou XLSX.", "error")
+                return redirect(url_for("admin_downloads"))
+        db.session.add(DownloadItem(
+            icon=request.form.get("icon", "fa-download").strip() or "fa-download",
+            name=request.form.get("name", "").strip(),
+            size=request.form.get("size", "").strip(),
+            url=stored_name or url_field or "#",
+        ))
+        db.session.commit()
+        return redirect(url_for("admin_downloads"))
+    items = DownloadItem.query.all()
+    return render_template("admin/downloads.html", items=items)
+
+
+@app.route("/admin/downloads/<int:item_id>/excluir", methods=["POST"])
+@login_required
+def admin_downloads_excluir(item_id):
+    admin_required()
+    obj = DownloadItem.query.get_or_404(item_id)
+    if obj.url and not obj.url.startswith("http"):
+        delete_media("downloads", obj.url)
+    db.session.delete(obj)
+    db.session.commit()
+    return redirect(url_for("admin_downloads"))
+
+
 # ---- Usuários administradores -------------------------------------------------
 @app.route("/admin/usuarios", methods=["GET", "POST"])
 @login_required
@@ -608,10 +652,10 @@ def seed_data():
 
     if DownloadItem.query.count() == 0:
         downloads = [
-            ("fa-print", "Drivers de Impressora (pacote geral)", "42 MB"),
+            ("fa-book", "Tutorial e-SUS PEC: recuperação de senha", "PDF"),
+            ("fa-file-shield", "Guia rápido: primeiros socorros de TI", "PDF"),
             ("fa-shield-halved", "Antivírus recomendado (gratuito)", "180 MB"),
             ("fa-file-zipper", "Utilitário de compactação", "6 MB"),
-            ("fa-book", "Manual: primeiros socorros de TI", "PDF · 2 MB"),
         ]
         for icon, name, size in downloads:
             db.session.add(DownloadItem(icon=icon, name=name, size=size))
