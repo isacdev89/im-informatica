@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Painel do Cliente — {{ settings.empresa_nome }}{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
+{% block content %}
+<main class="container" style="padding-top:140px; padding-bottom:100px;">
+  <div class="section-head reveal in" style="margin-bottom:30px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+    <div>
+      <span class="eyebrow">BEM-VINDO(A)</span>
+      <h2>Olá, {{ current_user.name }}</h2>
+      <p>Acompanhe seus serviços, orçamentos e downloads liberados.</p>
+    </div>
+    <a href="{{ url_for('cliente_logout') }}" class="btn btn-ghost"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+  </div>
+
+  <h4 style="margin-bottom:16px;">Histórico de serviços</h4>
+  {% for r in records %}
+  <div class="glass" style="padding:20px; border-radius:var(--radius-md); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+    <div><b>{{ r.description }}</b><div style="color:var(--text-muted); font-size:.85rem;">{{ r.date.strftime('%d/%m/%Y') }}</div></div>
+    <span style="font-family:var(--font-mono); font-size:.72rem; padding:5px 12px; border-radius:100px; background:{{ 'rgba(55,230,166,.15)' if r.status=='Concluído' else 'rgba(255,201,74,.15)' }}; color:{{ 'var(--ok)' if r.status=='Concluído' else '#FFC94A' }};">{{ r.status }}</span>
+  </div>
+  {% else %}
+  <p style="color:var(--text-muted);">Nenhum serviço registrado ainda.</p>
+  {% endfor %}
+
+  <h4 style="margin:30px 0 16px;">Orçamentos</h4>
+  {% for q in quotes %}
+  <div class="glass" style="padding:20px; border-radius:var(--radius-md); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+    <div><b>{{ q.description }}</b>{% if q.valid_until %}<div style="color:var(--text-muted); font-size:.85rem;">Válido até {{ q.valid_until.strftime('%d/%m/%Y') }}</div>{% endif %}</div>
+    <span style="font-family:var(--font-mono); font-size:.72rem; padding:5px 12px; border-radius:100px; background:rgba(255,201,74,.15); color:#FFC94A;">{{ q.status }}</span>
+  </div>
+  {% else %}
+  <p style="color:var(--text-muted);">Nenhum orçamento pendente.</p>
+  {% endfor %}
+
+  <h4 style="margin:30px 0 16px;">Downloads liberados</h4>
+  {% for d in downloads %}
+  <div class="glass" style="padding:20px; border-radius:var(--radius-md); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+    <b>{{ d.name }}</b><a href="{{ d.url }}" class="btn btn-ghost btn-sm">Baixar</a>
+  </div>
+  {% endfor %}
+</main>
+{% endblock %}

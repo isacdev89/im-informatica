@@ -1,0 +1,20 @@
+# Blueprint do Render — permite publicar com poucos cliques usando
+# "New +" -> "Blueprint" no painel do Render, apontando para este
+# repositório. O Render lê este arquivo e configura tudo sozinho:
+# tipo de serviço, comando de build, comando de start e plano gratuito.
+services:
+  - type: web
+    name: im-informatica
+    runtime: python
+    plan: free
+    branch: main
+    rootDir: flask_app
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_DEFAULT_PASSWORD
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12.3"

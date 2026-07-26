@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% block title %}Configurações{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Configurações gerais</h3></div>
+<form method="POST" class="glass" style="padding:24px; border-radius:var(--radius-md); max-width:560px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-field"><label>Nome da empresa</label><input type="text" name="empresa_nome" value="{{ settings.empresa_nome }}"></div>
+  <div class="form-field"><label>WhatsApp (somente números, com DDI+DDD)</label><input type="text" name="whatsapp" value="{{ settings.whatsapp }}"></div>
+  <div class="form-field"><label>E-mail de contato</label><input type="text" name="email_contato" value="{{ settings.email_contato }}"></div>
+  <div class="form-field"><label>Endereço</label><input type="text" name="endereco" value="{{ settings.endereco }}"></div>
+  <div class="form-field"><label>Facebook (link completo)</label><input type="text" name="facebook" value="{{ settings.facebook }}"></div>
+  <div class="form-field"><label>Instagram (link completo)</label><input type="text" name="instagram" value="{{ settings.instagram }}"></div>
+  <div class="form-field"><label>LinkedIn (link completo)</label><input type="text" name="linkedin" value="{{ settings.linkedin }}"></div>
+  <button class="btn btn-primary" type="submit">Salvar alterações</button>
+</form>
+{% endblock %}

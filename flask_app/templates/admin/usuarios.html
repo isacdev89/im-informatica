@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% block title %}Usuários{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Usuários administradores</h3></div>
+<form method="POST" class="glass" style="padding:22px; border-radius:var(--radius-md); margin-bottom:26px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="row g-3">
+    <div class="col-md-5"><div class="form-field"><label>Usuário</label><input type="text" name="username" required></div></div>
+    <div class="col-md-5"><div class="form-field"><label>Senha</label><input type="password" name="password" required></div></div>
+  </div>
+  <button class="btn btn-primary btn-sm" type="submit"><i class="fa-solid fa-plus"></i> Cadastrar usuário</button>
+</form>
+<div class="table-wrap glass"><table>
+  <thead><tr><th>Usuário</th><th>Criado em</th></tr></thead>
+  <tbody>
+    {% for u in items %}
+    <tr><td>{{ u.username }}</td><td>{{ u.created_at.strftime('%d/%m/%Y') }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

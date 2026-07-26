@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Clientes</h3></div>
+<p style="color:var(--text-muted); font-size:.85rem; margin-bottom:16px;">Clientes se cadastram pela própria Área do Cliente do site. Aqui você consulta e remove cadastros.</p>
+<div class="table-wrap glass"><table>
+  <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cadastrado em</th><th>Ações</th></tr></thead>
+  <tbody>
+    {% for c in items %}
+    <tr>
+      <td>{{ c.name }}</td><td>{{ c.email }}</td><td>{{ c.phone or '—' }}</td><td>{{ c.created_at.strftime('%d/%m/%Y') }}</td>
+      <td class="row-actions">
+        <form method="POST" action="{{ url_for('admin_clientes_excluir', item_id=c.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este cliente?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"><i class="fa-solid fa-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="color:var(--text-muted);">Nenhum cliente cadastrado ainda.</td></tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

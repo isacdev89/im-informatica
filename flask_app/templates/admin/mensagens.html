@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% block title %}Mensagens{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Mensagens recebidas</h3></div>
+<div class="table-wrap glass"><table>
+  <thead><tr><th>Nome</th><th>Contato</th><th>Mensagem</th><th>Recebido em</th><th>Status</th><th>Ações</th></tr></thead>
+  <tbody>
+    {% for m in items %}
+    <tr>
+      <td>{{ m.nome }}</td>
+      <td>{{ m.telefone }}<br><small style="color:var(--text-muted);">{{ m.email }}</small></td>
+      <td style="max-width:280px;">{{ m.mensagem }}</td>
+      <td>{{ m.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+      <td>{{ 'Lida' if m.is_read else 'Não lida' }}</td>
+      <td class="row-actions">
+        {% if not m.is_read %}
+        <form method="POST" action="{{ url_for('admin_mensagens_lida', item_id=m.id) }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" title="Marcar como lida"><i class="fa-solid fa-envelope-open"></i></button>
+        </form>
+        {% endif %}
+        <form method="POST" action="{{ url_for('admin_mensagens_excluir', item_id=m.id) }}" style="display:inline;" onsubmit="return confirm('Excluir esta mensagem?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"><i class="fa-solid fa-trash"></i></button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="color:var(--text-muted);">Nenhuma mensagem recebida ainda.</td></tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

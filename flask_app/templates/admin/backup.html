@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% block title %}Backup{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Backup automático</h3></div>
+<div class="glass" style="padding:24px; border-radius:var(--radius-md); max-width:640px; margin-bottom:24px;">
+  <p style="color:var(--text-muted); margin-bottom:16px;">
+    Gera uma cópia do banco de dados SQLite (<code>iminformatica.db</code>) na pasta <code>instance/backups</code>.
+    Recomendado: agende esta rotina com uma tarefa cron / agendador do Windows para rodar diariamente.
+  </p>
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Executar backup agora</button>
+  </form>
+</div>
+
+<h4 style="margin-bottom:14px;">Backups existentes</h4>
+<div class="table-wrap glass"><table>
+  <thead><tr><th>Arquivo</th></tr></thead>
+  <tbody>
+    {% for b in backups %}
+    <tr><td>{{ b }}</td></tr>
+    {% else %}
+    <tr><td style="color:var(--text-muted);">Nenhum backup gerado ainda.</td></tr>
+    {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

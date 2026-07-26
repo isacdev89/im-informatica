@@ -1,0 +1,13 @@
+{% extends "admin/base.html" %}
+{% block title %}Visão geral{% endblock %}
+{% block admin_content %}
+<div class="panel-head"><h3>Visão geral</h3></div>
+<div class="kpi-grid">
+  <div class="kpi-card glass"><b>{{ counts.clientes }}</b><span>Clientes cadastrados</span></div>
+  <div class="kpi-card glass"><b>{{ counts.servicos }}</b><span>Serviços cadastrados</span></div>
+  <div class="kpi-card glass"><b>{{ counts.artigos }}</b><span>Artigos publicados</span></div>
+  <div class="kpi-card glass"><b>{{ counts.portfolio }}</b><span>Itens de portfólio</span></div>
+  <div class="kpi-card glass"><b>{{ counts.mensagens }}</b><span>Mensagens não lidas</span></div>
+  <div class="kpi-card glass"><b>{{ counts.depoimentos }}</b><span>Depoimentos</span></div>
+</div>
+{% endblock %}
