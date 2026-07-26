@@ -2,14 +2,30 @@
 {% block title %}Clientes{% endblock %}
 {% block admin_content %}
 <div class="panel-head"><h3>Clientes</h3></div>
-<p style="color:var(--text-muted); font-size:.85rem; margin-bottom:16px;">Clientes se cadastram pela própria Área do Cliente do site. Aqui você consulta e remove cadastros.</p>
+<p style="color:var(--text-muted); font-size:.85rem; margin-bottom:16px;">Clientes se cadastram pela própria Área do Cliente do site. Aqui você consulta os acessos, bloqueia contas e remove cadastros.</p>
 <div class="table-wrap glass"><table>
-  <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cadastrado em</th><th>Ações</th></tr></thead>
+  <thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cadastrado em</th><th>Último acesso</th><th>Nº logins</th><th>E-mail confirmação</th><th>Status</th><th>Ações</th></tr></thead>
   <tbody>
     {% for c in items %}
     <tr>
-      <td>{{ c.name }}</td><td>{{ c.email }}</td><td>{{ c.phone or '—' }}</td><td>{{ c.created_at.strftime('%d/%m/%Y') }}</td>
+      <td>{{ c.name }}</td>
+      <td>{{ c.email }}</td>
+      <td>{{ c.phone or '—' }}</td>
+      <td>{{ c.created_at.strftime('%d/%m/%Y') }}</td>
+      <td>{{ c.last_login_at.strftime('%d/%m/%Y %H:%M') if c.last_login_at else '—' }}</td>
+      <td>{{ c.login_count or 0 }}</td>
+      <td>{% if c.confirmation_email_sent %}<span style="color:var(--ok);">Enviado</span>{% else %}<span style="color:var(--text-muted);">Não enviado</span>{% endif %}</td>
+      <td>
+        {% if c.is_active_account %}<span style="color:var(--ok);">Ativo</span>
+        {% else %}<span style="color:var(--danger, #ff6b6b);">Bloqueado</span>{% endif %}
+      </td>
       <td class="row-actions">
+        <form method="POST" action="{{ url_for('admin_clientes_bloquear', item_id=c.id) }}" style="display:inline;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" title="{{ 'Bloquear acesso' if c.is_active_account else 'Liberar acesso' }}">
+            <i class="fa-solid {{ 'fa-lock' if c.is_active_account else 'fa-lock-open' }}"></i>
+          </button>
+        </form>
         <form method="POST" action="{{ url_for('admin_clientes_excluir', item_id=c.id) }}" style="display:inline;" onsubmit="return confirm('Excluir este cliente?');">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit"><i class="fa-solid fa-trash"></i></button>
@@ -17,7 +33,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="5" style="color:var(--text-muted);">Nenhum cliente cadastrado ainda.</td></tr>
+    <tr><td colspan="9" style="color:var(--text-muted);">Nenhum cliente cadastrado ainda.</td></tr>
     {% endfor %}
   </tbody>
 </table></div>

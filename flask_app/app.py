@@ -14,7 +14,10 @@ Login administrativo padrão (criado automaticamente na primeira execução):
     senha:   im@admin123   (TROQUE a senha em produção — ver README.md)
 """
 import os
+import re
 import uuid
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort
@@ -88,6 +91,46 @@ def delete_media(subfolder, filename):
             os.remove(path)
         except OSError:
             pass
+
+
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def is_valid_email(value):
+    return bool(value) and bool(EMAIL_REGEX.match(value))
+
+
+# --- envio de e-mail (confirmação de cadastro) --------------------------------
+# Configure estas variáveis de ambiente no Render (Settings → Environment):
+#   MAIL_SERVER   ex: smtp.gmail.com
+#   MAIL_PORT     ex: 587
+#   MAIL_USERNAME ex: seuemail@gmail.com
+#   MAIL_PASSWORD senha de app (não a senha normal da conta)
+#   MAIL_SENDER   ex: I&M Informática <seuemail@gmail.com>
+# Se essas variáveis não estiverem configuradas, o e-mail simplesmente não é
+# enviado (o cadastro continua funcionando normalmente).
+def send_email(to_address, subject, body_html):
+    server = os.environ.get("MAIL_SERVER")
+    port = os.environ.get("MAIL_PORT")
+    username = os.environ.get("MAIL_USERNAME")
+    password = os.environ.get("MAIL_PASSWORD")
+    sender = os.environ.get("MAIL_SENDER", username)
+    if not (server and port and username and password):
+        app.logger.warning("E-mail não enviado: variáveis MAIL_* não configuradas.")
+        return False
+    try:
+        msg = MIMEText(body_html, "html", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = sender
+        msg["To"] = to_address
+        with smtplib.SMTP(server, int(port), timeout=10) as smtp:
+            smtp.starttls()
+            smtp.login(username, password)
+            smtp.sendmail(sender, [to_address], msg.as_string())
+        return True
+    except Exception as exc:  # nunca deixa o cadastro quebrar por falha de e-mail
+        app.logger.warning(f"Falha ao enviar e-mail para {to_address}: {exc}")
+        return False
 
 db.init_app(app)
 csrf = CSRFProtect(app)  # protege todos os formulários POST contra CSRF
@@ -193,6 +236,9 @@ def cliente_cadastro():
     if not (name and email and password):
         flash("Preencha todos os campos.", "error")
         return redirect(url_for("cliente_home"))
+    if not is_valid_email(email):
+        flash("Digite um e-mail válido (ex: voce@email.com).", "error")
+        return redirect(url_for("cliente_home"))
     if ClientUser.query.filter_by(email=email).first():
         flash("Este e-mail já está cadastrado.", "error")
         return redirect(url_for("cliente_home"))
@@ -200,6 +246,20 @@ def cliente_cadastro():
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
+
+    sent = send_email(
+        email,
+        f"Cadastro confirmado — {get_settings()['empresa_nome']}",
+        f"<p>Olá, {name}!</p>"
+        f"<p>Seu cadastro na Área do Cliente da {get_settings()['empresa_nome']} foi realizado com sucesso.</p>"
+        f"<p>E-mail de acesso: <b>{email}</b></p>"
+        f"<p>Se você não fez esse cadastro, entre em contato conosco.</p>",
+    )
+    user.confirmation_email_sent = bool(sent)
+    user.last_login_at = datetime.utcnow()
+    user.login_count = 1
+    db.session.commit()
+
     login_user(user)
     return redirect(url_for("cliente_dashboard"))
 
@@ -208,12 +268,21 @@ def cliente_cadastro():
 def cliente_login():
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
+    if not is_valid_email(email):
+        flash("Digite um e-mail válido (ex: voce@email.com).", "error")
+        return redirect(url_for("cliente_home"))
     user = ClientUser.query.filter_by(email=email).first()
-    if user and user.check_password(password):
-        login_user(user)
-        return redirect(url_for("cliente_dashboard"))
-    flash("E-mail ou senha inválidos.", "error")
-    return redirect(url_for("cliente_home"))
+    if not user or not user.check_password(password):
+        flash("E-mail ou senha inválidos.", "error")
+        return redirect(url_for("cliente_home"))
+    if not user.is_active_account:
+        flash("Este acesso foi bloqueado. Entre em contato conosco.", "error")
+        return redirect(url_for("cliente_home"))
+    user.last_login_at = datetime.utcnow()
+    user.login_count = (user.login_count or 0) + 1
+    db.session.commit()
+    login_user(user)
+    return redirect(url_for("cliente_dashboard"))
 
 
 @app.route("/cliente/dashboard")
@@ -292,6 +361,16 @@ def admin_clientes_excluir(item_id):
     admin_required()
     obj = ClientUser.query.get_or_404(item_id)
     db.session.delete(obj)
+    db.session.commit()
+    return redirect(url_for("admin_clientes"))
+
+
+@app.route("/admin/clientes/<int:item_id>/bloquear", methods=["POST"])
+@login_required
+def admin_clientes_bloquear(item_id):
+    admin_required()
+    obj = ClientUser.query.get_or_404(item_id)
+    obj.is_active_account = not obj.is_active_account
     db.session.commit()
     return redirect(url_for("admin_clientes"))
 

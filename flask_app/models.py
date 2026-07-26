@@ -41,6 +41,10 @@ class ClientUser(UserMixin, db.Model):
     phone = db.Column(db.String(30))
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login_at = db.Column(db.DateTime)
+    login_count = db.Column(db.Integer, default=0)
+    is_active_account = db.Column(db.Boolean, default=True)   # controle de acesso (bloquear/liberar)
+    confirmation_email_sent = db.Column(db.Boolean, default=False)
 
     services = db.relationship("ServiceRecord", backref="client", lazy=True, cascade="all, delete-orphan")
     quotes = db.relationship("Quote", backref="client", lazy=True, cascade="all, delete-orphan")

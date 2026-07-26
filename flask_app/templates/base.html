@@ -27,7 +27,12 @@
       <a href="{{ url_for('index') }}#downloads">Downloads</a>
       <a href="{{ url_for('index') }}#loja">Loja</a>
       <a href="{{ url_for('index') }}#contato">Contato</a>
-      <a href="{{ url_for('cliente_home') }}">Área do Cliente</a>
+      {% if current_user.is_authenticated and current_user.get_id().startswith('client:') %}
+        <a href="{{ url_for('cliente_dashboard') }}"><i class="fa-solid fa-circle-user"></i> {{ current_user.name.split(' ')[0] }}</a>
+        <a href="{{ url_for('cliente_logout') }}">Sair</a>
+      {% else %}
+        <a href="{{ url_for('cliente_home') }}">Área do Cliente</a>
+      {% endif %}
     </nav>
     <div class="nav-actions">
       <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema"><i class="fa-solid fa-moon"></i></button>
