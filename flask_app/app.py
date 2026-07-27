@@ -22,6 +22,7 @@ from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user
 )
@@ -36,6 +37,9 @@ from models import (
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
+# Render (e outros PaaS) fazem HTTPS no proxy e repassam pro app via HTTP simples.
+# Sem isso, o Flask acha que está em HTTP e gera links externos (og:image, etc.) errados.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "troque-esta-chave-em-producao")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'iminformatica.db')}"
