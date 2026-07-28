@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}{{ post.title }} — {{ settings.empresa_nome }}{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.description or (post.content[:150] ~ '...') }}{% endblock %}
+{% block og_image %}{% if post.cover_image %}{{ url_for('static', filename='uploads/blog/' + post.cover_image, _external=True) }}{% else %}{{ url_for('static', filename='img/og-banner.png', _external=True) }}{% endif %}{% endblock %}
 
 {% block content %}
 <section style="padding-top:140px; background:var(--bg-elevated);">
