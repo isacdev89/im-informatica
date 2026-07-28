@@ -60,13 +60,14 @@
 }
 
 *{box-sizing:border-box; margin:0; padding:0;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth; overflow-x:hidden; width:100%;}
 body{
   background:var(--bg);
   color:var(--text);
   font-family:var(--font-body);
   line-height:1.6;
   overflow-x:hidden;
+  width:100%;
   transition:background .4s var(--ease), color .4s var(--ease);
 }
 img{max-width:100%; display:block;}
@@ -416,14 +417,16 @@ h2{font-size:clamp(1.9rem, 3.2vw, 2.6rem);}
 .form-success.show{display:block;}
 
 /* ===================== FOOTER ===================== */
-footer{padding:70px 0 30px; border-top:1px solid var(--border); background:var(--bg-elevated);}
+footer{padding:70px 0 30px; border-top:1px solid var(--border); background:var(--bg-elevated); overflow-x:hidden;}
 .footer-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:40px; margin-bottom:50px;}
+.footer-grid > div{min-width:0;}
 @media (max-width:800px){.footer-grid{grid-template-columns:1fr 1fr;}}
-.footer-grid h5{font-size:.9rem; margin-bottom:18px; font-family:var(--font-mono); color:var(--text-muted); letter-spacing:.06em;}
-.footer-grid ul li{margin-bottom:10px;}
+@media (max-width:520px){.footer-grid{grid-template-columns:1fr; gap:32px;}}
+.footer-grid h5{font-size:.9rem; margin-bottom:18px; font-family:var(--font-mono); color:var(--text-muted); letter-spacing:.06em; overflow-wrap:break-word;}
+.footer-grid ul li{margin-bottom:10px; overflow-wrap:break-word; word-break:break-word;}
 .footer-grid ul a{color:var(--text-muted); font-size:.88rem; transition:color .3s;}
 .footer-grid ul a:hover{color:var(--neon);}
-.footer-desc{color:var(--text-muted); font-size:.9rem; max-width:320px; margin-top:14px;}
+.footer-desc{color:var(--text-muted); font-size:.9rem; max-width:320px; margin-top:14px; overflow-wrap:break-word;}
 .social-row{display:flex; gap:10px; margin-top:20px;}
 .social-row a{width:38px; height:38px; border-radius:50%; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); transition:all .3s;}
 .social-row a:hover{color:var(--neon); border-color:var(--neon);}
